@@ -1,0 +1,1400 @@
+---
+title: "WDI_combined data"
+author: "Amarachi Lauren Obioha"
+date: "2024-05-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(WDI)
+library(dplyr)
+library(imputeTS)
+library(stargazer)
+library(plm)
+```
+
+
+```{r}
+country_codes <- c(country_code_c <- c( "AUS","BRA","CAN","CHN", "FRA", "DEU", "IND", "IDN", "IRN", "ITA","JPN", "MEX", "RUS", "SAU","KOR","ESP","THA", "TUR", "GBR", "USA"))
+gdp_c_1<- "NY.GDP.PCAP.KD.ZG" #GDP per capita growth annual percentage growth 
+gdp_c_2 <- "NY.GDP.PCAP.CD" #GDP per capita (current US$) annual
+population_c <- "SP.POP.GROW" # Population growth annual population growth rate 
+government_expenditure_c <- "SE.XPD.TOTL.GB.ZS" # Government expenditure on education percentage of total government expenditure
+fdi_c <- "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows (% of GDP)
+urbpop_c <- "SP.URB.GROW" #Urban population growth annual percentage growth
+RD_c <-"GB.XPD.RSDV.GD.ZS" #Research and development expenditure (% of GDP)
+```
+
+
+```{r}
+# control variables 
+control_variables_1 <- c("NY.GDP.PCAP.KD.ZG", #GDP per capita growth annual percentage growth 
+                       "SP.POP.GROW", # Population growth annual population growth rate 
+                       "SE.XPD.TOTL.GB.ZS", # Government expenditure on education percentage of total government expenditure
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+)                     
+                      
+control_variables_2 <- c("NY.GDP.PCAP.CD", #GDP per capita current US$
+                        "SP.URB.GROW", #Urban population growth annual percentage growth                 
+                       "GB.XPD.RSDV.GD.ZS", #Research and development expenditure percentage of GDP
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       )
+
+control_variables_3 <- c("NY.GDP.PCAP.KD.ZG", #GDP per capita growth annual percentage growth 
+                       "SP.POP.GROW", # Population growth annual population growth rate 
+                       "SE.XPD.TOTL.GB.ZS" # Government expenditure on education percentage of total government expenditure
+                       )  
+
+control_variables_4 <- c("NY.GDP.PCAP.CD", #GDP per capita current US$
+                        "SP.URB.GROW", #Urban population growth annual percentage growth                 
+                       "GB.XPD.RSDV.GD.ZS" #Research and development expenditure percentage of GDP
+                       )
+
+control_variables_5 <- c("NY.GDP.PCAP.KD.ZG", #GDP per capita growth annual percentage growth 
+                       "SP.POP.GROW", # Population growth annual population growth rate 
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       ) 
+
+control_variables_6 <- c("NY.GDP.PCAP.CD", #GDP per capita current US$
+                        "SP.URB.GROW", #Urban population growth annual percentage growth                 
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       )
+
+control_variables_7 <- c("NY.GDP.PCAP.KD.ZG", #GDP per capita growth annual percentage growth 
+                       "SP.URB.GROW", #Urban population growth annual percentage growth 
+                       "SE.XPD.TOTL.GB.ZS", # Government expenditure on education percentage of total government expenditure
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       )   
+
+control_variables_8 <- c("NY.GDP.PCAP.CD", #GDP per capita (current US$)
+                        "SP.POP.GROW", # Population growth annual population growth rate                 
+                       "GB.XPD.RSDV.GD.ZS", #Research and development expenditure percentage of GDP
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       )
+control_variables_9 <- control_variables_6 <- c("NY.GDP.PCAP.CD", #GDP per capita current US$
+                        "SP.URB.GROW", #Urban population growth annual percentage growth 
+                        "GB.XPD.RSDV.GD.ZS", #Research and development expenditure percentage of GDP
+                       "BX.KLT.DINV.WD.GD.ZS" # 	Foreign direct investment, net inflows percentage of GDP
+                       )
+```
+
+
+
+```{r}
+#Data from WDI database
+data_wdi_1 <- WDI(country = country_codes, indicator = control_variables_1, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_2 <- WDI(country = country_codes, indicator = control_variables_2, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_3 <- WDI(country = country_codes, indicator = control_variables_3, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_4 <- WDI(country = country_codes, indicator = control_variables_4, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_5 <- WDI(country = country_codes, indicator = control_variables_5, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_6 <- WDI(country = country_codes, indicator = control_variables_6, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_7 <- WDI(country = country_codes, indicator = control_variables_7, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_8 <- WDI(country = country_codes, indicator = control_variables_8, start = min(1990), end = max(2022), extra = TRUE)
+data_wdi_9 <- WDI(country = country_codes, indicator = control_variables_9, start = min(1990), end = max(2022), extra = TRUE)
+```
+
+#Original Data 
+```{r}
+library(readxl)
+Original_data <- read_excel("owid-energy-data.xlsx")
+View(Original_data)
+```
+
+
+```{r}
+library(readxl)
+Combined_copy <- read_excel("Combined  copy.xlsx")
+View(Combined_copy)
+
+#Extracted columns
+Coal_consump_comb <- Combined_copy$coal_consumption
+Natural_gas_comb <- Combined_copy$gas_consumption
+Oil_consump_comb <- Combined_copy$oil_energy_per_capita
+Nuclear_consump_comb<- Combined_copy$nuclear_consumption
+Renewable_energy_comb <- Combined_copy$renewables_consumption
+
+#Combining IEA database and WDI database to get major variables
+length(Coal_consump_comb)
+length(Natural_gas_comb)
+length(Oil_consump_comb)
+length(Nuclear_consump_comb)
+length(Renewable_energy_comb)
+
+Coal_consump_comb <- Coal_consump_comb[1:660]  # Adjust the length if necessary
+Natural_gas_comb <- Natural_gas_comb[1:660] # Adjust the length if necessary
+Oil_consump_comb <- Oil_consump_comb[1:660] # Adjust the length if necessary
+Nuclear_consump_comb <- Nuclear_consump_comb[1:660] # Adjust the length if necessary
+Renewable_energy_comb <- Renewable_energy_comb[1:660] # Adjust the length if necessary
+
+#Adding variables to wdi data-1
+data_wdi_1$Coal_consump_comb <- Coal_consump_comb
+data_wdi_1$Natural_gas_comb <- Natural_gas_comb
+data_wdi_1$Oil_consump_comb <- Oil_consump_comb
+data_wdi_1$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_1$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-2
+data_wdi_2$Coal_consump_comb <- Coal_consump_comb
+data_wdi_2$Natural_gas_comb <- Natural_gas_comb
+data_wdi_2$Oil_consump_comb <- Oil_consump_comb
+data_wdi_2$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_2$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-3
+data_wdi_3$Coal_consump_comb <- Coal_consump_comb
+data_wdi_3$Natural_gas_comb <- Natural_gas_comb
+data_wdi_3$Oil_consump_comb <- Oil_consump_comb
+data_wdi_3$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_3$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-4
+data_wdi_4$Coal_consump_comb <- Coal_consump_comb
+data_wdi_4$Natural_gas_comb <- Natural_gas_comb
+data_wdi_4$Oil_consump_comb <- Oil_consump_comb
+data_wdi_4$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_4$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-5
+data_wdi_5$Coal_consump_comb <- Coal_consump_comb
+data_wdi_5$Natural_gas_comb <- Natural_gas_comb
+data_wdi_5$Oil_consump_comb <- Oil_consump_comb
+data_wdi_5$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_5$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-6
+data_wdi_6$Coal_consump_comb <- Coal_consump_comb
+data_wdi_6$Natural_gas_comb <- Natural_gas_comb
+data_wdi_6$Oil_consump_comb <- Oil_consump_comb
+data_wdi_6$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_6$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-7
+data_wdi_7$Coal_consump_comb <- Coal_consump_comb
+data_wdi_7$Natural_gas_comb <- Natural_gas_comb
+data_wdi_7$Oil_consump_comb <- Oil_consump_comb
+data_wdi_7$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_7$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-8
+data_wdi_8$Coal_consump_comb <- Coal_consump_comb
+data_wdi_8$Natural_gas_comb <- Natural_gas_comb
+data_wdi_8$Oil_consump_comb <- Oil_consump_comb
+data_wdi_8$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_8$Renewable_energy_comb <- Renewable_energy_comb
+
+#Adding variables to wdi data-9
+data_wdi_9$Coal_consump_comb <- Coal_consump_comb
+data_wdi_9$Natural_gas_comb <- Natural_gas_comb
+data_wdi_9$Oil_consump_comb <- Oil_consump_comb
+data_wdi_9$Nuclear_consump_comb <- Nuclear_consump_comb
+data_wdi_9$Renewable_energy_comb <- Renewable_energy_comb
+```
+
+```{r}
+#Linear interpolation
+Combined_Energy_Data_1 <- data_wdi_1 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_1 = na_interpolation(NY.GDP.PCAP.KD.ZG, option = "linear"), # Linear interpolation
+    Population_growth_1  = na_interpolation(SP.POP.GROW, option = "linear") ,     # Linear interpolation
+    Govt_edu_expenditure_1 = na_interpolation (SE.XPD.TOTL.GB.ZS, option = "linear"), #Linear interpolation
+    Foreign_direct_investment_1 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+    )
+
+Combined_Energy_Data_2 <- data_wdi_2 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_2 = na_interpolation(NY.GDP.PCAP.CD, option = "linear"), # Linear interpolation
+    Urban_Population_2  = na_interpolation(SP.URB.GROW, option = "linear") ,     # Linear interpolation
+    Research_Dev_expenditure_2 = na_interpolation (GB.XPD.RSDV.GD.ZS, option = "linear"), #Linear interpolation
+    Foreign_direct_investment_2 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+    )
+
+Combined_Energy_Data_3 <- data_wdi_3 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_3 = na_interpolation(NY.GDP.PCAP.KD.ZG, option = "linear"), # Linear interpolation
+    Population_growth_3  = na_interpolation(SP.POP.GROW, option = "linear") ,     # Linear interpolation
+    Govt_edu_expenditure_3 = na_interpolation (SE.XPD.TOTL.GB.ZS, option = "linear"), #Linear interpolation
+    )
+
+Combined_Energy_Data_4 <- data_wdi_4 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_4 = na_interpolation(NY.GDP.PCAP.CD, option = "linear"), # Linear interpolation
+    Urban_Population_4  = na_interpolation(SP.URB.GROW, option = "linear") ,     # Linear interpolation
+    Research_Dev_expenditure_4 = na_interpolation (GB.XPD.RSDV.GD.ZS, option = "linear"), #Linear interpolation
+    )
+
+Combined_Energy_Data_5 <- data_wdi_5 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_5 = na_interpolation(NY.GDP.PCAP.KD.ZG, option = "linear"), # Linear interpolation
+    Population_growth_5  = na_interpolation(SP.POP.GROW, option = "linear") ,     # Linear interpolation
+    Foreign_direct_investment_5 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+    )
+
+Combined_Energy_Data_6 <- data_wdi_6 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_6 = na_interpolation(NY.GDP.PCAP.CD, option = "linear"), # Linear interpolation
+    Urban_Population_6 = na_interpolation(SP.URB.GROW, option = "linear") ,     # Linear interpolation
+    Foreign_direct_investment_6 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+)
+
+Combined_Energy_Data_7 <- data_wdi_7 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_7 = na_interpolation(NY.GDP.PCAP.KD.ZG, option = "linear"), # Linear interpolation
+    Urban_growth_7 = na_interpolation(SP.URB.GROW, option = "linear") ,     # Linear interpolation
+    Govt_edu_expenditure_7 = na_interpolation (SE.XPD.TOTL.GB.ZS, option = "linear"), #Linear interpolation
+    Foreign_direct_investment_7 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+    )
+
+
+Combined_Energy_Data_8 <- data_wdi_8 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_8 = na_interpolation(NY.GDP.PCAP.CD, option = "linear"), # Linear interpolation
+    Population_growth_8  = na_interpolation(SP.POP.GROW, option = "linear") ,     # Linear interpolation
+    Research_Dev_expenditure_8 = na_interpolation (GB.XPD.RSDV.GD.ZS, option = "linear"), #Linear interpolation
+    Foreign_direct_investment_8 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+    )
+
+Combined_Energy_Data_9 <- data_wdi_9 %>% 
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    Coal_consump_comb = na_interpolation(Coal_consump_comb, option = "linear"), #Linear interpolation
+    Natural_gas_comb = na_interpolation(Natural_gas_comb, option = "linear"), # Linear interpolation
+    Oil_consump_comb = na_interpolation(Oil_consump_comb, option = "linear"), #Linear interpolation
+    Nuclear_consump_comb = na_interpolation(Nuclear_consump_comb, option = "linear"), #Linear interpolation
+    Renewable_energy_comb = na_interpolation(Renewable_energy_comb, option = "linear"), #Linear interpolation
+    GDP_per_Capita_9 = na_interpolation(NY.GDP.PCAP.CD, option = "linear"), # Linear interpolation
+    Urban_Population_9 = na_interpolation(SP.URB.GROW, option = "linear") ,     # Linear interpolation
+    Research_Dev_expenditure_9 = na_interpolation (GB.XPD.RSDV.GD.ZS, option = "linear"), #Linear interpolation
+    Foreign_direct_investment_9 = na_interpolation (BX.KLT.DINV.WD.GD.ZS, option = "linear") #Linear interpolation
+)
+
+```
+
+
+```{r}
+#Removing unnecessary columns
+Energy_Data_1 <- Combined_Energy_Data_1 %>% dplyr::select(-NY.GDP.PCAP.KD.ZG, -SP.POP.GROW, -SE.XPD.TOTL.GB.ZS, -BX.KLT.DINV.WD.GD.ZS)
+Energy_Data_2 <- Combined_Energy_Data_2 %>% dplyr::select(-NY.GDP.PCAP.CD, -SP.URB.GROW,            -GB.XPD.RSDV.GD.ZS, -BX.KLT.DINV.WD.GD.ZS)
+Energy_Data_3 <- Combined_Energy_Data_3 %>% dplyr::select (-NY.GDP.PCAP.KD.ZG, -SP.POP.GROW, -SE.XPD.TOTL.GB.ZS)  
+Energy_Data_4 <- Combined_Energy_Data_4 %>% dplyr::select (-NY.GDP.PCAP.CD, -SP.URB.GROW,                 
+-GB.XPD.RSDV.GD.ZS)
+Energy_Data_5 <- Combined_Energy_Data_5 %>% dplyr::select (-NY.GDP.PCAP.KD.ZG, -SP.POP.GROW, -BX.KLT.DINV.WD.GD.ZS) 
+Energy_Data_6 <- Combined_Energy_Data_6 %>% dplyr::select (-NY.GDP.PCAP.CD, -SP.URB.GROW,-GB.XPD.RSDV.GD.ZS,  -BX.KLT.DINV.WD.GD.ZS)
+Energy_Data_7 <- Combined_Energy_Data_7 %>% dplyr::select (-NY.GDP.PCAP.KD.ZG,-SP.URB.GROW,
+-SE.XPD.TOTL.GB.ZS,-BX.KLT.DINV.WD.GD.ZS) 
+Energy_Data_8 <- Combined_Energy_Data_8 %>% dplyr::select (-NY.GDP.PCAP.CD,-SP.POP.GROW,                 -GB.XPD.RSDV.GD.ZS,-BX.KLT.DINV.WD.GD.ZS)
+Energy_Data_9 <- Combined_Energy_Data_9 %>% dplyr::select (-NY.GDP.PCAP.CD, -SP.URB.GROW, -GB.XPD.RSDV.GD.ZS, -BX.KLT.DINV.WD.GD.ZS)
+```
+
+
+```{r}
+#Using Stargazer- Descriptive Statistics
+stargazer(Energy_Data_1, type = "text")
+stargazer(Energy_Data_2, type = "text")
+stargazer(Energy_Data_3, type = "text")
+stargazer(Energy_Data_4, type = "text")
+stargazer(Energy_Data_5, type = "text")
+stargazer(Energy_Data_6, type = "text")
+stargazer(Energy_Data_7, type = "text")
+stargazer(Energy_Data_8, type = "text")
+stargazer(Energy_Data_9, type = "text")
+```
+
+
+```{r}
+#Descriptive Statistics using summary
+summary(Energy_Data_1)
+summary(Energy_Data_2)
+summary(Energy_Data_3)
+summary(Energy_Data_4)
+summary(Energy_Data_5)
+summary(Energy_Data_6)
+summary(Energy_Data_7)
+summary(Energy_Data_8)
+summary(Energy_Data_9)
+```
+
+#Choice between Random and Fixed effects
+```{r}
+#Fixed effect
+Model_fix <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb, data = Combined_copy, index = c("country", "year"),
+                   model = "within")  # or "within" for fixed effects model) 
+
+Model_fix6 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_6 + Urban_Population_6 + Foreign_direct_investment_6, data = Energy_Data_6, , index = c("country", "year"),
+                   model = "within")  # or "within" for fixed effects model)
+
+stargazer( Model_fix, Model_fix6, type = "text")
+```
+
+
+```{r}
+#Using Hausman test 
+# Perform the Hausman test
+hausman_test <- phtest(Model, Model_fix)
+# Print the Hausman test results
+print(hausman_test)
+print(hausman_test6)
+```
+#Results
+HO:The preferred model is random effects 
+H1:The preferred model is fixed effects
+We reject the null hypothesis and conclude that the preferred model is the fixed effects.
+
+
+#Ordinary Least Squares Method (OLS)
+```{r}
+#Panel Linear Regression for 20 countries 
+# Create a multiple regression model with control variables
+library(stargazer)
+Model <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb, data = Combined_copy, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model) 
+Model1 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_1 + Population_growth_1 + Govt_edu_expenditure_1 + Foreign_direct_investment_1, data = Energy_Data_1, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model2 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_2 + Urban_Population_2 + Research_Dev_expenditure_2 +  Foreign_direct_investment_2, data = Energy_Data_2, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model3 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_3 + Population_growth_3 + Govt_edu_expenditure_3, data = Energy_Data_3, 
+              , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model4 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_4 + Urban_Population_4 + Research_Dev_expenditure_4, data = Energy_Data_4, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model5 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_5 + Population_growth_5 + Foreign_direct_investment_5, data = Energy_Data_5, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+Model6 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_6 + Urban_Population_6 + Foreign_direct_investment_6, data = Energy_Data_6, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model7 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_7 + Urban_growth_7 + Govt_edu_expenditure_7 + Foreign_direct_investment_7, data = Energy_Data_7, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model8 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_8 + Population_growth_8 + Research_Dev_expenditure_8 +  Foreign_direct_investment_8, data = Energy_Data_8, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model9 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_9 + Urban_Population_9 + Research_Dev_expenditure_9 + Foreign_direct_investment_9, data = Energy_Data_9, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+stargazer(Model, Model1, Model2, Model3, Model4, type = "text")
+```
+
+
+```{r}
+stargazer(Model5, Model6, Model7, Model8, Model9, type = "text")
+```
+
+#Note
+In Model6, all dependent variables are significant. 
+
+```{r}
+#Using Variance Inflation Factor (VIF) test to check for multicollinearity
+library(car)
+vif <- vif(Model)
+print(vif)
+```
+
+```{r}
+library(car)
+vif_1 <- vif(Model1)
+print(vif_1)
+```
+
+```{r}
+library(car)
+vif_2 <- vif(Model2)
+print(vif_2)
+```
+
+```{r}
+library(car)
+vif_3 <- vif(Model3)
+print(vif_3)
+```
+
+```{r}
+library(car)
+vif_4 <- vif(Model4)
+print(vif_4)
+```
+
+```{r}
+library(car)
+vif_5 <- vif(Model5)
+print(vif_5)
+```
+
+```{r}
+library(car)
+vif_6 <- vif(Model6)
+print(vif_6)
+```
+
+```{r}
+library(car)
+vif_7 <- vif(Model7)
+print(vif_7)
+```
+
+```{r}
+library(car)
+vif_8 <- vif(Model8)
+print(vif_8)
+```
+
+```{r}
+library(car)
+vif_9 <- vif(Model9)
+print(vif_9)
+```
+#Results
+Interpretation Multicollinearity occurs when more than two explanatory variables are strongly correlated linearly (Belsley,1991).The VIF calculates how much multicollinearity has affected the calculated regression coefficients’ variance (Krishna, 1975). Using the Variance Inflation Factor (VIF) to check for multicollinearity, VIF values higher than 5 indicates multicollinearity (Heiss, 2016)
+
+```{r}
+#Using the Breusch-Pagan Test to test for heteroscedasticity.
+library(lmtest)
+(BP <- bptest(Model))
+```
+
+```{r}
+(BP1 <- bptest(Model1))
+```
+
+```{r}
+(BP2 <- bptest(Model2))
+```
+
+```{r}
+(BP3 <- bptest(Model3))
+```
+
+```{r}
+(BP4 <- bptest(Model4))
+```
+
+```{r}
+(BP5 <- bptest(Model5))
+```
+
+
+```{r}
+(BP6 <- bptest(Model6))
+```
+
+```{r}
+(BP7 <- bptest(Model7))
+```
+
+```{r}
+(BP8 <- bptest(Model8))
+```
+
+```{r}
+(BP9 <- bptest(Model9))
+```
+#Results
+Same results < 2.2e-16 which is less than the 0.05 significance level. 
+
+H0:There is no heteroscedasticity i.e there is homoscedasticity
+H1:There is heteroscedasticity 
+
+We reject the null hypothesis and conclude that there is a presence of heteroscedasticity. 
+
+
+```{r}
+#Use a joint hypothesis test to detect whether all coefficients are zero
+library(AER)
+HNull <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0")
+HNull1 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","GDP_per_Capita_1=0","Population_growth_1=0","Govt_edu_expenditure_1=0","Foreign_direct_investment_1=0")
+HNull2 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "GDP_per_Capita_2","Urban_Population_2", "Research_Dev_expenditure_2","Foreign_direct_investment_2")
+HNull3 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "GDP_per_Capita_3", "Population_growth_3","Govt_edu_expenditure_3")
+HNull4 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","GDP_per_Capita_4","Urban_Population_4","Research_Dev_expenditure_4")
+HNull5 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","GDP_per_Capita_5", "Population_growth_5", "Foreign_direct_investment_5")
+HNull6 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","GDP_per_Capita_6", "Urban_Population_6","Foreign_direct_investment_6")
+HNull7 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "GDP_per_Capita_7", "Urban_growth_7", "Govt_edu_expenditure_7", "Foreign_direct_investment_7")
+HNull8 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","GDP_per_Capita_8","Population_growth_8","Research_Dev_expenditure_8","Foreign_direct_investment_8")
+HNull9 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "GDP_per_Capita_9", "Urban_Population_9", "Research_Dev_expenditure_9", "Foreign_direct_investment_9" )
+linearHypothesis(Model, HNull)
+linearHypothesis(Model1, HNull1)
+linearHypothesis(Model2, HNull2)
+linearHypothesis(Model3, HNull3)
+linearHypothesis(Model4, HNull4)
+linearHypothesis(Model5, HNull5)
+linearHypothesis(Model6, HNull6)
+linearHypothesis(Model7, HNull7)
+linearHypothesis(Model8, HNull8)
+linearHypothesis(Model9, HNull9)
+```
+
+#Results 
+For the interpretation of the result above, the null and alternative hypothesis are formulated below: 
+H0: All coefficients in the Model are zero 
+H1: At least one coefficient in the Model  is not equal to zero
+If the H0 is true, it shows that is no evidence of a significant relationship between the dependent variable and the independent variables. If the H1 is true, it shows that there is an evidence of a significant relationship between the dependent variable and the independent variables.
+From the results above, the calculated p-value is 2.2e-16 which is less than the significance level of 0.05, therefore we reject the null hypothesis that all coefficients in the Model1 are equal to zero and conclude that at least one coefficient in Model1 is not equal to zero and there is evidence of significant relationship between the dependent and independent variables.
+
+
+```{r}
+#Using the Jarque-Bera-Test to test for normality of the residuals
+library(tseries)
+(jbt <- jarque.bera.test(Model$residuals))
+(jbt1 <- jarque.bera.test(Model1$residuals))
+(jbt2 <- jarque.bera.test(Model2$residuals))
+(jbt3 <- jarque.bera.test(Model3$residuals))
+(jbt4 <- jarque.bera.test(Model4$residuals))
+(jbt5 <- jarque.bera.test(Model5$residuals))
+(jbt6 <- jarque.bera.test(Model6$residuals))
+(jbt7 <- jarque.bera.test(Model7$residuals))
+(jbt8 <- jarque.bera.test(Model8$residuals))
+(jbt9 <- jarque.bera.test(Model9$residuals))
+```
+
+#Results
+The Jarque-Bera-Test is a test that determines if a given data have the skewness and kurtosis that a consistent with a normal distribution (Jarque & Bera, 1980).
+
+H0: residuals are not normally distributed.                                                                   H1: residuals are normally distributed.
+
+From the result above, the p-value is 2.2e-16 which is less than the 0.05 significance interval so we reject the H0 and can conclude that our residuals indeed are normally distributed
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model)
+t_test <- t.test(residuals)
+print(t_test)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model1)
+t_test1 <- t.test(residuals)
+print(t_test1)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model2)
+t_test2 <- t.test(residuals)
+print(t_test2)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model3)
+t_test3 <- t.test(residuals)
+print(t_test3)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model4)
+t_test4 <- t.test(residuals)
+print(t_test4)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model5)
+t_test5 <- t.test(residuals)
+print(t_test5)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model6)
+t_test6 <- t.test(residuals)
+print(t_test6)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model7)
+t_test7 <- t.test(residuals)
+print(t_test7)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model8)
+t_test8 <- t.test(residuals)
+print(t_test8)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model9)
+t_test9 <- t.test(residuals)
+print(t_test9)
+```
+#Results
+H0: The mean of the residuals is equal to zero, indicating that the zero mean assumption holds.
+H1: The mean of the residuals is not equal to zero, indicating that the zero mean assumption does not hold.
+Since the p-value is greater than 0.05, we fail to reject the null hypothesis and can conclude that the mean of the residuals is equal to zero.
+
+
+#Using Polynomials
+```{r}
+Model_poly <- plm(Renewable_energy_comb ~ poly(Coal_consump_comb) + poly(Natural_gas_comb) + poly(Oil_consump_comb) + poly(Nuclear_consump_comb), data = Combined_copy, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model) 
+Model_poly1 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_1) +poly(Population_growth_1) + poly(Govt_edu_expenditure_1) + poly(Foreign_direct_investment_1), data = Energy_Data_1, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly2 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_2) + poly(Urban_Population_2) + poly(Research_Dev_expenditure_2) + poly(Foreign_direct_investment_2), data = Energy_Data_2, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly3 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_3) + poly(Population_growth_3) + poly(Govt_edu_expenditure_3), data = Energy_Data_3, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly4 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_4) + poly(Urban_Population_4) + poly(Research_Dev_expenditure_4), data = Energy_Data_4, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly5 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_5) + poly(Population_growth_5) + poly(Foreign_direct_investment_5), data = Energy_Data_5, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly6 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_6) + poly(Urban_Population_6) + poly(Foreign_direct_investment_6), data = Energy_Data_6, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly7 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_7) + poly(Urban_growth_7) + poly(Govt_edu_expenditure_7) + poly(Foreign_direct_investment_7), data = Energy_Data_7, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly8 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_8) + poly(Population_growth_8) + poly(Research_Dev_expenditure_8) + poly(Foreign_direct_investment_8), data = Energy_Data_8, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+Model_poly9 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_9) + poly(Urban_Population_9) + poly(Research_Dev_expenditure_9) + poly(Foreign_direct_investment_9), data = Energy_Data_9, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+stargazer(Model_poly, Model_poly1, Model_poly2, Model_poly3, Model_poly4, type = "text")
+```
+
+
+```{r}
+stargazer(Model_poly5, Model_poly6, Model_poly7, Model_poly8, Model_poly9, type = "text")
+```
+
+#Note
+In Modelpoly6, all dependent variables are siginificant
+
+```{r}
+(BP_poly <- bptest(Model_poly))
+```
+
+```{r}
+(BP_poly1 <- bptest(Model_poly1))
+```
+
+```{r}
+(BP_poly2 <- bptest(Model_poly2))
+```
+
+
+```{r}
+(BP_poly3 <- bptest(Model_poly3))
+```
+
+
+```{r}
+(BP_poly4 <- bptest(Model_poly4))
+```
+
+
+```{r}
+(BP_poly5 <- bptest(Model_poly5))
+```
+
+
+```{r}
+(BP_poly6 <- bptest(Model_poly6))
+```
+
+
+```{r}
+(BP_poly7 <- bptest(Model_poly7))
+```
+
+```{r}
+(BP_poly8 <- bptest(Model_poly8))
+```
+
+```{r}
+(BP_poly9 <- bptest(Model_poly9))
+```
+#Results
+Same results < 2.2e-16 which is less than the 0.05 significance level. 
+
+H0:There is no heteroscedasticity i.e there is homoscedasticity
+H1:There is heteroscedasticity 
+
+We reject the null hypothesis and conclude that there is a presence of heteroscedasticity. 
+
+
+```{r}
+library(car)
+vif_poly <- vif(Model_poly)
+print(vif_poly)
+```
+
+
+```{r}
+library(car)
+vif_poly_1 <- vif(Model_poly1)
+print(vif_poly_1)
+```
+
+```{r}
+library(car)
+vif_poly_2 <- vif(Model_poly2)
+print(vif_poly_2)
+```
+
+```{r}
+library(car)
+vif_poly_3 <- vif(Model_poly3)
+print(vif_poly_3)
+```
+
+```{r}
+library(car)
+vif_poly_4 <- vif(Model_poly4)
+print(vif_poly_4)
+```
+
+```{r}
+library(car)
+vif_poly_5 <- vif(Model_poly5)
+print(vif_poly_5)
+```
+
+```{r}
+library(car)
+vif_poly_6 <- vif(Model_poly6)
+print(vif_poly_6)
+```
+
+```{r}
+library(car)
+vif_poly_7 <- vif(Model_poly7)
+print(vif_poly_7)
+```
+
+```{r}
+library(car)
+vif_poly_8 <- vif(Model_poly8)
+print(vif_poly_8)
+```
+
+```{r}
+library(car)
+vif_poly_9 <- vif(Model_poly9)
+print(vif_poly_9)
+```
+#Results
+Interpretation Multicollinearity occurs when more than two explanatory variables are strongly correlated linearly (Belsley,1991).The VIF calculates how much multicollinearity has affected the calculated regression coefficients’ variance (Krishna, 1975). Using the Variance Inflation Factor (VIF) to check for multicollinearity, VIF values higher than 5 indicates multicollinearity (Heiss, 2016)
+
+
+```{r}
+#Use a joint hypothesis test to detect whether all coefficients are zero
+library(AER)
+HNull_poly <- c("poly(Coal_consump_comb)=0", "poly(Oil_consump_comb)=0", "poly(Nuclear_consump_comb)=0", "poly(Natural_gas_comb)=0")
+HNull_poly1 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","poly(GDP_per_Capita_1)=0","poly(Population_growth_1)=0","poly(Govt_edu_expenditure_1)=0","poly(Foreign_direct_investment_1)=0")
+HNull_poly2 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "poly(GDP_per_Capita_2)=0","poly(Urban_Population_2)=0","poly(Research_Dev_expenditure_2)=0","poly(Foreign_direct_investment_2)=0")
+HNull_poly3 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "poly(GDP_per_Capita_3)=0", "poly(Population_growth_3)=0","poly(Govt_edu_expenditure_3)=0")
+HNull_poly4 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","poly(GDP_per_Capita_4)=0","poly(Urban_Population_4)=0","poly(Research_Dev_expenditure_4)=0")
+HNull_poly5 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","poly(GDP_per_Capita_5)=0", "poly(Population_growth_5)=0", "poly(Foreign_direct_investment_5)=0")
+HNull_poly6 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","poly(GDP_per_Capita_6)=0", "poly(Urban_Population_6)=0","poly(Foreign_direct_investment_6)=0")
+HNull_poly7 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "poly(GDP_per_Capita_7)=0", "poly(Urban_growth_7)=0", "poly(Govt_edu_expenditure_7)=0", "poly(Foreign_direct_investment_7)=0")
+HNull_poly8 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0","poly(GDP_per_Capita_8)=0","poly(Population_growth_8)=0","poly(Research_Dev_expenditure_8)=0","poly(Foreign_direct_investment_8)=0")
+HNull_poly9 <- c("Coal_consump_comb=0", "Oil_consump_comb=0", "Nuclear_consump_comb=0", "Natural_gas_comb=0", "poly(GDP_per_Capita_9)=0", "poly(Urban_Population_9)=0", "poly(Research_Dev_expenditure_9)=0", "poly(Foreign_direct_investment_9)=0" )
+linearHypothesis(Model_poly,  HNull_poly)
+linearHypothesis(Model_poly1, HNull_poly1)
+linearHypothesis(Model_poly2, HNull_poly2)
+linearHypothesis(Model_poly3, HNull_poly3)
+linearHypothesis(Model_poly4, HNull_poly4)
+linearHypothesis(Model_poly5, HNull_poly5)
+linearHypothesis(Model_poly6, HNull_poly6)
+linearHypothesis(Model_poly7, HNull_poly7)
+linearHypothesis(Model_poly8, HNull_poly8)
+linearHypothesis(Model_poly9, HNull_poly9)
+```
+
+#Results 
+For the interpretation of the result above, the null and alternative hypothesis are formulated below: 
+H0: All coefficients in the Model are zero 
+H1: At least one coefficient in the Model  is not equal to zero
+If the H0 is true, it shows that is no evidence of a significant relationship between the dependent variable and the independent variables. If the H1 is true, it shows that there is an evidence of a significant relationship between the dependent variable and the independent variables.
+From the results above, the calculated p-value is 2.2e-16 which is less than the significance level of 0.05, therefore we reject the null hypothesis that all coefficients in the Model1 are equal to zero and conclude that at least one coefficient in Model1 is not equal to zero and there is evidence of significant relationship between the dependent and independent variables.
+
+
+```{r}
+#Using the Jarque-Bera-Test to test for normality of the residuals
+library(tseries)
+(jbt_poly <- jarque.bera.test(Model_poly$residuals))
+(jbt_poly1 <- jarque.bera.test(Model_poly1$residuals))
+(jbt_poly2 <- jarque.bera.test(Model_poly2$residuals))
+(jbt_poly3 <- jarque.bera.test(Model_poly3$residuals))
+(jbt_poly4 <- jarque.bera.test(Model_poly4$residuals))
+(jbt_poly5 <- jarque.bera.test(Model_poly5$residuals))
+(jbt_poly6 <- jarque.bera.test(Model_poly6$residuals))
+(jbt_poly7 <- jarque.bera.test(Model_poly7$residuals))
+(jbt_poly8 <- jarque.bera.test(Model_poly8$residuals))
+(jbt_poly9 <- jarque.bera.test(Model_poly9$residuals))
+```
+
+#Results
+The Jarque-Bera-Test is a test that determines if a given data have the skewness and kurtosis that a consistent with a normal distribution (Jarque & Bera, 1980).
+
+H0: residuals are not normally distributed.                                                                   H1: residuals are normally distributed.
+
+From the result above, the p-value is 2.2e-16 which is less than the 0.05 significance interval so we reject the H0 and can conclude that our residuals indeed are normally distributed
+
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly)
+t_test_poly <- t.test(residuals)
+print(t_test_poly)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly1)
+t_test_poly1 <- t.test(residuals)
+print(t_test_poly1)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly2)
+t_test_poly2 <- t.test(residuals)
+print(t_test_poly2)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly3)
+t_test_poly3 <- t.test(residuals)
+print(t_test_poly3)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly4)
+t_test_poly4 <- t.test(residuals)
+print(t_test_poly4)
+```
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly5)
+t_test_poly5 <- t.test(residuals)
+print(t_test_poly5)
+```
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly6)
+t_test_poly6 <- t.test(residuals)
+print(t_test_poly6)
+```
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly7)
+t_test_poly7 <- t.test(residuals)
+print(t_test_poly7)
+```
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly8)
+t_test_poly8 <- t.test(residuals)
+print(t_test_poly8)
+```
+
+
+```{r}
+#Test for Zero Mean OLS assumption. 
+residuals <- residuals(Model_poly9)
+t_test_poly9 <- t.test(residuals)
+print(t_test_poly9)
+```
+#Results
+H0: The mean of the residuals is equal to zero, indicating that the zero mean assumption holds.
+H1: The mean of the residuals is not equal to zero, indicating that the zero mean assumption does not hold.
+Since the p-value is greater than 0.05, we fail to reject the null hypothesis and can conclude that the mean of the residuals is equal to zero.
+
+
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust <- coeftest(Model1, vcov = vcovHC(Model))
+print(robust)
+```
+
+```{r}
+summary(Model)
+```
+
+
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust1 <- coeftest(Model1, vcov = vcovHC(Model1))
+print(robust1)
+```
+
+```{r}
+summary(Model1)
+```
+
+#Results of Heteroskedasticity-Robust (HC) standard errors
+Larger standard errors in the HC-robust summary indicate that the HC-robust standard errors provide a more accurate reflection of the true variability, particularly when heteroskedasticity is present.In summary, the standard errors from the HC-robust standard errors provide information about the precision of the coefficient estimates in the presence of heteroskedasticity.
+
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust2 <- coeftest(Model2, vcov = vcovHC(Model2))
+print(robust2)
+```
+
+```{r}
+summary(Model2)
+```
+
+
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust6 <- coeftest(Model6, vcov = vcovHC(Model6))
+print(robust6)
+```
+
+
+```{r}
+summary(Model6)
+```
+
+
+#Explanation of Heteroskedasticity and Utilization of HC Standard Errors
+In the regression analysis, we aimed to examine the relationship between various independent variables and the dependent variable. However, during the analysis, I encountered a common statistical issue known as heteroskedasticity. Heteroskedasticity occurs when the variability of the errors in a regression model is not constant across observations. This violation of the assumption of homoscedasticity can lead to biased standard errors and unreliable inference about the significance of the coefficients.
+
+To address this issue, I employed Heteroskedasticity-Robust (HC) standard errors. These standard errors provide more accurate estimates when heteroskedasticity is present, as they adjust for the non-constant variance of the errors. By using HC standard errors,the aim is to ensure the validity and reliability of the regression analysis, despite the presence of heteroskedasticity.
+
+#Interpretation of Results
+
+Upon applying HC standard errors to our regression model, I observed several noteworthy findings:
+
+For coefficients such as Coal_consump_comb, Natural_gas_comb, and Oil_consump_comb, we found statistically significant estimates with p-values indicating high significance. The HC standard errors associated with these coefficients were larger compared to the standard errors obtained from traditional methods. This indicates higher uncertainty in the coefficient estimates due to the presence of heteroskedasticity. Despite this increased uncertainty, the coefficients remained statistically significant, suggesting robust relationships between these variables and the dependent variable.
+
+Conversely, coefficients such as Nuclear_consump_comb, GDP_per_Capita_1, Population_growth_1, Govt_edu_expenditure_1, and Foreign_direct_investment_1 showed no statistical significance. While the HC standard errors for these coefficients were also larger, indicating increased uncertainty, their lack of significance suggests that these variables may not have a significant effect on the dependent variable in our model.
+
+By accounting for the non-constant variance of the errors, I obtained more accurate estimates of the standard errors and made reliable inferences about the significance of the coefficient estimates. Despite the increased uncertainty associated with HC standard errors, our analysis provided valuable insights into the relationships between the independent and dependent variables in our research model.
+
+#Using polynimials
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust_poly <- coeftest(Model_poly, vcov = vcovHC(Model_poly))
+print(robust_poly)
+```
+
+```{r}
+summary(Model_poly)
+```
+
+```{r}
+#Addressing heteroscedasticity using Heteroskedasticity-Robust (HC) standard errors
+# Obtain robust standard errors
+robust_poly6 <- coeftest(Model_poly6, vcov = vcovHC(Model_poly6))
+print(robust_poly6)
+```
+
+```{r}
+summary(Model_poly6)
+```
+
+
+#Using log-log methods
+```{r}
+Model_log <- plm(log(Renewable_energy_comb) ~ log(Coal_consump_comb) + log(Natural_gas_comb) + log(Oil_consump_comb) + log(Nuclear_consump_comb), data = Combined_copy, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model
+```
+#My data is not compatible using log-log method as I consecutively get this error below: Error in model.matrix.pdata.frame(data) : model matrix or response contains non-finite values (NA/NaN/Inf/-Inf)
+
+```{r}
+Model_log6 <- plm(log(Renewable_energy_comb) ~ log(Coal_consump_comb) + log(Natural_gas_comb) + log(Oil_consump_comb) + log(Nuclear_consump_comb) + log(GDP_per_Capita_6) + log(Urban_Population_6) + log(Foreign_direct_investment_6), data = Energy_Data_6, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+```
+
+#My data is not compatible using log-log method as I consecutively get this error : Error in model.matrix.pdata.frame(data) : model matrix or response contains non-finite values (NA/NaN/Inf/-Inf)
+
+#Using linear-log method
+```{r}
+Model_linear_log <- plm((Renewable_energy_comb) ~ log(Coal_consump_comb) + log(Natural_gas_comb) + log(Oil_consump_comb) + log(Nuclear_consump_comb), data = Combined_copy, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model
+```
+
+#My data is not compatible using log-log method as I consecutively get this error : Error in model.matrix.pdata.frame(data) : model matrix or response contains non-finite values (NA/NaN/Inf/-Inf)
+
+```{r}
+Model_linear_log6 <- plm(Renewable_energy_comb ~ log(Coal_consump_comb) + log(Natural_gas_comb) + log(Oil_consump_comb) + log(Nuclear_consump_comb) + log(GDP_per_Capita_6) + log(Urban_Population_6) + log(Foreign_direct_investment_6), data = Energy_Data_6, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+```
+
+#My data is not compatible using log-log method as I consecutively get this error : Error in model.matrix.pdata.frame(data) : model matrix or response contains non-finite values (NA/NaN/Inf/-Inf)
+
+```{r}
+#Using Ramsey’s Regression Equation Specification Error (RESET)
+# Run RESET test (joint F-test on squared predicted values)
+predicted1 <- fitted(Model1)
+predicted_squared1 <- predicted^2
+Model_reset1<- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_1 + Population_growth_1 + Govt_edu_expenditure_1 + Foreign_direct_investment_1 + I(predicted_squared1), data = Energy_Data_1, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted2 <- fitted(Model2)
+predicted_squared2 <- predicted^2
+Model_reset2 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_2 + Urban_Population_2 + Research_Dev_expenditure_2 +  Foreign_direct_investment_2 +  I(predicted_squared2), data = Energy_Data_2, , index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted3 <- fitted(Model3)
+predicted_squared3 <- predicted^2
+Model_reset3 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_3 + Population_growth_3 + Govt_edu_expenditure_3+ I(predicted_squared3), data = Energy_Data_3,  index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted4 <- fitted(Model4)
+predicted_squared4 <- predicted^2
+Model_reset4 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_4 + Urban_Population_4 + Research_Dev_expenditure_4 +   I(predicted_squared4), data = Energy_Data_4, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted5 <- fitted(Model5)
+predicted_squared5 <- predicted^2
+Model_reset5 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_5 + Population_growth_5 + Foreign_direct_investment_5  + I(predicted_squared5), data = Energy_Data_5,  index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted6 <- fitted(Model6)
+predicted_squared6 <- predicted^2
+Model_reset6 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_6 + Urban_Population_6 + Foreign_direct_investment_6 + I(predicted_squared6), data = Energy_Data_6, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted7 <- fitted(Model7)
+predicted_squared7 <- predicted^2
+Model_reset7 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_7 + Urban_growth_7 + Govt_edu_expenditure_7 + Foreign_direct_investment_7 + I(predicted_squared7), data = Energy_Data_7, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted8 <- fitted(Model8)
+predicted_squared8 <- predicted^2
+Model_reset8 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_8 + Population_growth_8 + Research_Dev_expenditure_8 +  Foreign_direct_investment_8 + I(predicted_squared8), data = Energy_Data_8, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted9 <- fitted(Model9)
+predicted_squared9 <- predicted^2
+Model_reset9 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + GDP_per_Capita_9 + Urban_Population_9 + Research_Dev_expenditure_9 + Foreign_direct_investment_9+ I(predicted_squared8), data = Energy_Data_9,  index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+# Extract RESET test result
+reset_test_result1<- summary(Model_reset1)$fstatistic
+reset_test_result2<- summary(Model_reset2)$fstatistic
+reset_test_result3<- summary(Model_reset3)$fstatistic
+reset_test_result4<- summary(Model_reset4)$fstatistic
+reset_test_result5<- summary(Model_reset5)$fstatistic
+reset_test_result6<- summary(Model_reset6)$fstatistic
+reset_test_result7<- summary(Model_reset7)$fstatistic
+reset_test_result8<- summary(Model_reset8)$fstatistic
+reset_test_result9<- summary(Model_reset9)$fstatistic
+
+# Print RESET test results
+print(reset_test_result1)
+print(reset_test_result2)
+print(reset_test_result3)
+print(reset_test_result4)
+print(reset_test_result5)
+print(reset_test_result6)
+print(reset_test_result7)
+print(reset_test_result8)
+print(reset_test_result9)
+```
+
+
+```{r}
+#Using Ramsey’s Regression Equation Specification Error (RESET)
+# Run RESET test (joint F-test on squared predicted values)
+predicted_poly1 <- fitted(Model_poly1)
+predicted_poly_squared1 <- predicted^2
+Model_reset_poly1<- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_1) + poly(Population_growth_1) + poly(Govt_edu_expenditure_1) + poly(Foreign_direct_investment_1) + I(predicted_poly_squared1), data = Energy_Data_1, index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly2 <- fitted(Model_poly2)
+predicted_poly_squared2 <- predicted^2
+Model_reset_poly2 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_2) + poly(Urban_Population_2) + poly(Research_Dev_expenditure_2) + poly(Foreign_direct_investment_2) +  I(predicted_poly_squared2), data = Energy_Data_2, , index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly3 <- fitted(Model_poly3)
+predicted_poly_squared3 <- predicted^2
+Model_reset_poly3 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_3) + poly(Population_growth_3) + poly(Govt_edu_expenditure_3)+ I(predicted_squared3), data = Energy_Data_3,  index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly4 <- fitted(Model_poly4)
+predicted_poly_squared4 <- predicted^2
+Model_reset_poly4 <- plm (Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_4) + poly(Urban_Population_4) + poly(Research_Dev_expenditure_4) + I(predicted_poly_squared4), data = Energy_Data_4, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted_poly5 <- fitted(Model_poly5)
+predicted_poly_squared5 <- predicted^2
+Model_reset_poly5 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_5) + poly(Population_growth_5) + poly(Foreign_direct_investment_5)+ I(predicted_poly_squared5), data = Energy_Data_5,  index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly6 <- fitted(Model_poly6)
+predicted_poly_squared6 <- predicted^2
+Model_reset_poly6 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_6) + poly(Urban_Population_6) + poly(Foreign_direct_investment_6) + I(predicted_poly_squared6), data = Energy_Data_6, index = c("country", "year"),
+                   model = "random")  # or "within" for fixed effects model)
+
+predicted_poly7 <- fitted(Model_poly7)
+predicted_poly_squared7 <- predicted^2
+Model_reset_poly7 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_7) + poly(Urban_growth_7) + poly(Govt_edu_expenditure_7) + poly(Foreign_direct_investment_7) + I(predicted_poly_squared7), data = Energy_Data_7, index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly8 <- fitted(Model_poly8)
+predicted_poly_squared8 <- predicted^2
+Model_reset_poly8 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_8) + poly(Population_growth_8) + poly(Research_Dev_expenditure_8) +  poly(Foreign_direct_investment_8) + I(predicted_poly_squared8), data = Energy_Data_8, index = c("country", "year"), model = "random")  # or "within" for fixed effects model)
+
+predicted_poly9 <- fitted(Model_poly9)
+predicted_poly_squared9 <- predicted^2
+Model_reset_poly9 <- plm(Renewable_energy_comb ~ Coal_consump_comb + Natural_gas_comb + Oil_consump_comb + Nuclear_consump_comb + poly(GDP_per_Capita_9) + poly(Urban_Population_9) + poly(Research_Dev_expenditure_9) + poly(Foreign_direct_investment_9)+ I(predicted_poly_squared8), data = Energy_Data_9,  index = c("country", "year"),model = "random")  # or "within" for fixed effects model)
+
+# Extract RESET test result
+reset_test_poly_result1<- summary(Model_reset_poly1)$fstatistic
+reset_test_poly_result2 <- summary(Model_reset_poly2)$fstatistic
+reset_test_poly_result3<- summary(Model_reset_poly3)$fstatistic
+reset_test_poly_result4<- summary(Model_reset_poly4)$fstatistic
+reset_test_poly_result5<- summary(Model_reset_poly5)$fstatistic
+reset_test_poly_result6<- summary(Model_reset_poly6)$fstatistic
+reset_test_poly_result7<- summary(Model_reset_poly7)$fstatistic
+reset_test_poly_result8<- summary(Model_reset_poly8)$fstatistic
+reset_test_poly_result9<- summary(Model_reset_poly9)$fstatistic
+
+# Print RESET test results
+print(reset_test_poly_result1)
+print(reset_test_poly_result2)
+print(reset_test_poly_result3)
+print(reset_test_poly_result4)
+print(reset_test_poly_result5)
+print(reset_test_poly_result6)
+print(reset_test_poly_result7)
+print(reset_test_poly_result8)
+print(reset_test_poly_result9)
+```
+
+#Results
+H0: There are omitted variables and the functional form is not adequate.                                   
+H1: There are no omitted variables and the functional form is adequate.
+From the result above, the p-value is 2.2e-16 which is less than the 0.05 significance, so we reject the H0 and can conclude that there are no omitted variables and the functional form is adequate to explain the relationship between the dependent variable  and the independent variables.
+
+
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_Model <- residuals(Model)
+qqnorm(residuals_Model)
+qqline(residuals_Model)
+```
+
+#Results
+The quantiles of residuals in this model are plotted against the normal distribution quantiles. It can be inferred that the scatter plot of the residuals is generally normal because it goes roughly along the 45-degree line notwithstanding that there are a few variations in the upper and lower quantiles.    
+
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_Model <- residuals(Model)
+qqnorm(residuals_Model)
+qqline(residuals_Model)
+```
+
+
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_Model1 <- residuals(Model1)
+qqnorm(residuals_Model1)
+qqline(residuals_Model1)
+```
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_Model6 <- residuals(Model6)
+qqnorm(residuals_Model6)
+qqline(residuals_Model6)
+```
+
+
+
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_model_poly <- residuals(Model_poly)
+qqnorm(residuals_model_poly)
+qqline(residuals_model_poly)
+```
+
+
+```{r}
+#Using Q-Q-plots for the residuals of models  
+residuals_model_poly6 <- residuals(Model_poly6)
+qqnorm(residuals_model_poly6)
+qqline(residuals_model_poly6)
+```
+
+
+```{r}
+#Scale-Location-plots 
+library(ggplot2)
+residuals_vs_fitted <- ggplot(data.frame(residuals = residuals(Model), fitted_values = fitted(Model)), aes(x = fitted_values, y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs. Fitted Values Plot") +
+  theme_minimal()
+print(residuals_vs_fitted)
+```
+
+
+
+```{r}
+#Scale-Location-plots
+library(ggplot2)
+residuals_vs_fitted1 <- ggplot(data.frame(residuals = residuals(Model1), fitted_values = fitted(Model1)), aes(x = fitted_values, y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs. Fitted Values Plot") +
+  theme_minimal()
+print(residuals_vs_fitted1)
+```
+
+
+
+```{r}
+#Scale-Location-plots
+residuals_vs_fitted6 <- ggplot(data.frame(residuals = residuals(Model6), fitted_values = fitted(Model6)), aes(x = fitted_values, y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs. Fitted Values Plot") +
+  theme_minimal()
+print(residuals_vs_fitted6)
+```
+ 
+#Results
+The scale-location-plot shows a clear trend of a biased shape in the distribution of residuals indicating heteroscedasticity. 
+
+```{r}
+#Scale-Location-plots using polynomials 
+residuals_vs_fitted_poly <- ggplot(data.frame(residuals = residuals(Model_poly), fitted_values = fitted(Model_poly)), aes(x = fitted_values, y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs. Fitted Values Plot") +
+  theme_minimal()
+print(residuals_vs_fitted_poly)
+```
+
+
+
+
+
+```{r}
+#Scale-Location-plots using polynomials 
+residuals_vs_fitted_poly6 <- ggplot(data.frame(residuals = residuals(Model_poly6), fitted_values = fitted(Model_poly6)), aes(x = fitted_values, y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs. Fitted Values Plot") +
+  theme_minimal()
+print(residuals_vs_fitted_poly6)
+```
+
+
+#Second formular to test for multi-collinearity
+```{r}
+# Extract the model matrix
+X1 <- model.matrix(col_gdp)
+
+# Calculate the correlation matrix of the independent variables
+cor_matrix <- cor(X1)
+
+# Calculate the inverse of the correlation matrix
+inv_cor_matrix <- solve(cor_matrix)
+
+# Calculate VIF for each independent variable
+vif <- diag(inv_cor_matrix)
+
+# Print VIF values
+print(vif)
+```
+
+#Manual test for collinearity-Code gotten from the R script
+```{r}
+col1<- plm(coal_consumption ~ gas_consumption + oil_consumption + nuclear_consumption, data = FullData1 , index = c("country", "year"), model = "within")  # or "within" for fixed effects model)
+summary(col1)
+1/(1-0.7751)
+```
+
+
+```{r}
+# Selecting Breusch-Godfrey test for different lags
+for (i in 1:10) {
+  bg_test <- bgtest(M18, order = i)
+  cat("Lag order:", i, "p-value:", bg_test$p.value, "\n")
+}
+```
+
