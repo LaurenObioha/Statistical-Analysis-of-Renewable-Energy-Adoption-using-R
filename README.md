@@ -26,8 +26,8 @@ Turkey and United Kingdom from 1990 to 2022.
 - Alternative hypothesis (H1): Renewable energy consumption significantly impacts oil consumption. 
 
 After performing  t-test:
-- p-value > 0.05 -> Accept H0
-- Conclusion: It can be suggested that trade has no explanatory power on M4 and Trade has a non-significant effect on GDP, holding all other variables constant. 
+- p-value < 0.01 -> Reject H0
+- Conclusion: Therefore, it can be suggested that an increase in renewable energy consuption significantly decreases oil consumption holding all other variables constant. 
 
 # 🔍 Example Result 2
 - Null hypothesis (H0): There is no significant influence of renewable energy consumption on natural gas consumption
@@ -35,10 +35,9 @@ After performing  t-test:
 
 After performing t-test:
 - p-value < 0.05 -> Reject H0
-- Conclusion: M8 significantly affects GDP suggesting that Model M8 has the largest explanatory power for economic development, holding all other variables constant. 
+- Conclusion: Therefore, it can be suggested that an increase in renewable energy consumption significantly increases gas consumption holding all other variables constant. 
 
 # 💡 Key Learnings 
 - Applying hypothesis testing to real-world data.
-- Understanding how sample means compare to population benchmarks.
 - Communicating findings through staistical reasoning and visuals.
 - Reproducible workflows for academic-style data analysis. 
